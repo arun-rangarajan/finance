@@ -1,25 +1,51 @@
 # coding: utf-8
 
-from common import get_formatted, get_friendly_format
+import csv
+import os
+import sys
+import numpy as np
+import common
 
 ticker = 'CB'
 
-current_stock_price = 137
-shares_out = 469.61 * 1e6
-next_yr_FCF = 4.43 * 1e9 # estimate
+data_file_path = "../data/{}.tsv".format(ticker)
+estimates_file_path = '../estimates/dcf_estimates.csv'
 
-# discount rate - use 8% for the best, 15% for the worst
-r = 0.1
+for p in [data_file_path, estimates_file_path]:
+    if not os.path.exists(p):
+        print("File not found:", p)
+        sys.exit(1)
 
-# FCF growth rates
-rate_first_5_yrs = 0.04
-rate_last_5_yrs = 0.03
+row = None
+with open(estimates_file_path, newline='') as csvfile:
+    reader = csv.DictReader(filter(lambda row: row[0] != '#', csvfile))
+    for r in reader:
+        if r['ticker'] == ticker:
+            row = r
+            break
+if not row:
+    raise ValueError("Estimate for " + ticker + " not found in estimates file!")
+current_stock_price = float(row['current_stock_price'])
+discount_rate = float(row['discount_rate_pct']) / 100
+rate_first_5_yrs = float(row['growth_rate1_pct']) / 100
+rate_last_5_yrs = float(row['growth_rate2_pct']) / 100
+perp_growth_rate = float(row['perpetuity_growth_rate_pct']) / 100
+margin_of_safety = float(row['mos_factor_pct']) / 100
 
-# how confident are you in your analysis
-margin_of_safety = 0.8
 
-# perpetuity growth rate
-g = 0.03
+d = common.get_data_dict(data_file_path)
+shares_out = float(d['Weighted Average Shs Out'][-1])
+next_yr_FCF = np.mean(d['FCF per Share']) * shares_out
+
+print("---")
+print("              Discount rate =", discount_rate)
+print("Growth rate for first 5 yrs =", rate_first_5_yrs)
+print("Growth rate for last 5 yrs  =", rate_last_5_yrs)
+print("     Perpetuity growth rate =", perp_growth_rate)
+print("                 MOS factor =", margin_of_safety)
+print("                Shares out. =", common.get_friendly_format(shares_out))
+print("                Next yr FCF =", common.get_friendly_format(next_yr_FCF))
+print("---")
 
 fcfs = [next_yr_FCF]
 for yr in range(2, 7):
@@ -32,11 +58,12 @@ for yr in range(7, 11):
 
 discounted_fcfs = []
 for idx, fcf in enumerate(fcfs):
-    discounted_fcfs.append(fcf / ((1 + r) ** (idx + 1)))
+    discounted_fcfs.append(fcf / ((1 + discount_rate) ** (idx + 1)))
 #print(get_formatted(discounted_fcfs))
 
-perpetuity_value = fcfs[-1] * (1 + g) / (r - g)
-discounted_perp_value = perpetuity_value / ((1 + r) ** 10)
+perpetuity_value = fcfs[-1] * (1 + perp_growth_rate) / \
+    (discount_rate - perp_growth_rate)
+discounted_perp_value = perpetuity_value / ((1 + discount_rate) ** 10)
 #print("Disc pv =", get_friendly_format(discounted_perp_value))
 
 total_equity_value = sum(discounted_fcfs) + discounted_perp_value

@@ -1,0 +1,20 @@
+ticker,current_stock_price,discount_rate_pct,growth_rate1_pct,growth_rate2_pct,perpetuity_growth_rate_pct,mos_factor_pct
+# ---
+# discount_rate_pct
+#   - use 8% for the best (like JNJ), 15% for the worst (growth companies)
+#   - think of this as expected annual return
+#
+# growth_rate1_pct
+#   - used for the first 5 years; estimate using last 10-yr net income/revenue growth rate
+# 
+# growth_rate2_pct
+#   - used for the last 5 years; estimate using last 10-yr net income/revenue growth rate
+#
+# perpetuity_growth_rate_pct
+#   - growth rate after 10 years; 3% is usually OK, unless you think biz is excellent and raise to 4% or more
+#
+# mos_factor_pct
+#   - how confident are you with your numbers above. Use 80% for the best; 40% for the worst.
+#
+# ---
+CB,137,9,12,8,3,80
