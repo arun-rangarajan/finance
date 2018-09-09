@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import common
 
-ticker = 'CB'
+ticker = 'TRV'
 
 data_file_path = "../data/{}.tsv".format(ticker)
 estimates_file_path = '../estimates/dcf_estimates.csv'

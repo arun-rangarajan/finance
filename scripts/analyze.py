@@ -6,7 +6,7 @@ import numpy as np
 from collections import OrderedDict
 import common
 
-ticker = 'CB'
+ticker = 'TRV'
 
 data_file = "../data/{}.tsv".format(ticker)
 if not os.path.exists(data_file):
@@ -34,12 +34,14 @@ df = pd.DataFrame(OrderedDict([
     ('ROA', d['ROA']),
     #('ROIC', d['ROIC']),
     ('D/E', debt_to_equity),
-    ('Net Income', common.get_formatted(d['Net Income']))
+    ('Net Income', common.get_formatted(d['Net Income'])),
+    ('Revenue', common.get_formatted(d['Revenue']))
 ]))
 print(ticker)
 print(tabulate(df, headers='keys', tablefmt='psql'))   
 
 fcfs = common.get_product(d, 'FCF per Share', 'Weighted Average Shs Out')
-print('Avg FCF =', common.get_friendly_format(np.mean(fcfs)))
-print('FCF growth rate = {}%'.format(common.get_growth_rate(d['FCF per Share'])))
+print('               Avg FCF =', common.get_friendly_format(np.mean(fcfs)))
+print('       FCF growth rate = {}%'.format(common.get_growth_rate(d['FCF per Share'])))
 print('Net income growth rate = {}%'.format(common.get_growth_rate(d['Net Income'])))
+print('   Revenue growth rate = {}%'.format(common.get_growth_rate(d['Revenue'])))

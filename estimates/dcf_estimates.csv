@@ -17,4 +17,5 @@ ticker,current_stock_price,discount_rate_pct,growth_rate1_pct,growth_rate2_pct,p
 #   - how confident are you with your numbers above. Use 80% for the best; 40% for the worst.
 #
 # ---
-CB,137,9,12,8,3,80
+TRV,131,8,5,5,3,75
+CB,137,9,8,6,3,70
