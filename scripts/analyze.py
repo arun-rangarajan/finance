@@ -6,7 +6,7 @@ import numpy as np
 from collections import OrderedDict
 import common
 
-ticker = 'TRV'
+ticker = 'BA'
 
 data_file = "../data/{}.tsv".format(ticker)
 if not os.path.exists(data_file):
@@ -41,7 +41,18 @@ print(ticker)
 print(tabulate(df, headers='keys', tablefmt='psql'))   
 
 fcfs = common.get_product(d, 'FCF per Share', 'Weighted Average Shs Out')
-print('               Avg FCF =', common.get_friendly_format(np.mean(fcfs)))
+print('               Avg FCF =', common.get_friendly_format(np.nanmean(fcfs)))
 print('       FCF growth rate = {}%'.format(common.get_growth_rate(d['FCF per Share'])))
 print('Net income growth rate = {}%'.format(common.get_growth_rate(d['Net Income'])))
 print('   Revenue growth rate = {}%'.format(common.get_growth_rate(d['Revenue'])))
+
+if 'Total liabilities' in d.keys():
+    print('---')
+    print("Graham's cigar butt business")
+    price_to_ncavs = []
+    for cash, liab, mkt_cap in zip(d['Cash and short-term investments'], d['Total liabilities'], d['Market Cap']):
+        if cash and cash > 0 and liab and liab > 0:
+            price_to_ncavs.append(round(mkt_cap / (cash - liab), 2))
+    print("Price-to-NCAV =", price_to_ncavs)
+    print('---')
+

@@ -7,6 +7,8 @@ MILLION_RE = re.compile(r'[mM]$')
 BILLION_RE = re.compile(r'[bB]$')
 
 def get_friendly_format(num):
+    if not num:
+        return 0
     num = float('{:.3g}'.format(num))
     magnitude = 0
     while abs(num) >= 1000:
@@ -31,7 +33,7 @@ def get_growth_rate(vals):
     return round(rate * 100, 1)
 
 
-def sanitize(values, len_reqd):
+def sanitize_accounting_number(v):
     """
     Cleans up accounting numbers:
         - remove commas
@@ -40,41 +42,36 @@ def sanitize(values, len_reqd):
         - millions in m or M
         - billions in b or B
     """
-    new_vals = []
-    for v in values:
-        new_val = None
-        
-        # remove all non-ASCII chars
-        v = ''.join([i if ord(i) < 128 else '' for i in v])
-        if not v:
-            new_vals.append(None)
-            continue
-        v = v.replace(',', '')
-        
-        is_negative = False        
-        if v.startswith('(') and v.endswith(')'):
-            is_negative = True
-            v = v.lstrip('(').rstrip(')')
-
-        if v.endswith('%'):
-            v = str(float(v.rstrip('%')) / 100)
-
-        if MILLION_RE.search(v):
-            v = v[0:-1]
-            v = float(v) * 1e6
-        else:
-            if BILLION_RE.search(v):
-                v = v[0:-1]
-                v = float(v) * 1e9
-        
-        if is_negative:
-            new_val = (-1) * float(v)
-        else:
-            new_val = float(v)
-
-        new_val = round(new_val, 2)
-        new_vals.append(new_val)
     
+    # remove all non-ASCII chars
+    v = ''.join([i if ord(i) < 128 else '' for i in v])
+    if not v:
+        return None
+
+    v = v.replace(',', '')
+    
+    is_negative = False        
+    if v.startswith('(') and v.endswith(')'):
+        is_negative = True
+        v = v.lstrip('(').rstrip(')')
+
+    if v.endswith('%'):
+        v = str(float(v.rstrip('%')) / 100)
+
+    if MILLION_RE.search(v):
+        v = v[0:-1]
+        v = float(v) * 1e6
+    elif BILLION_RE.search(v):
+        v = v[0:-1]
+        v = float(v) * 1e9
+    
+    new_val = (-1) * float(v) if is_negative else float(v)
+    new_val = round(new_val, 2)
+    return new_val
+
+
+def sanitize(values, len_reqd):
+    new_vals = [sanitize_accounting_number(v) for v in values]
     assert(len(new_vals) == len_reqd)
     return new_vals
 
@@ -122,7 +119,10 @@ def get_product(d, numerator, denominator):
     dens = d[denominator]
     r = []
     for n, d in zip(nums, dens):
-        r.append(n * d)
+        if n and d:
+            r.append(n * d)
+        else:
+            r.append(np.nan)
     return r
 
 

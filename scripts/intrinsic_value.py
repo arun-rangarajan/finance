@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import common
 
-ticker = 'TRV'
+ticker = 'AMGN'
 
 data_file_path = "../data/{}.tsv".format(ticker)
 estimates_file_path = '../estimates/dcf_estimates.csv'
@@ -25,6 +25,7 @@ with open(estimates_file_path, newline='') as csvfile:
             break
 if not row:
     raise ValueError("Estimate for " + ticker + " not found in estimates file!")
+
 current_stock_price = float(row['current_stock_price'])
 discount_rate = float(row['discount_rate_pct']) / 100
 rate_first_5_yrs = float(row['growth_rate1_pct']) / 100
@@ -32,12 +33,18 @@ rate_last_5_yrs = float(row['growth_rate2_pct']) / 100
 perp_growth_rate = float(row['perpetuity_growth_rate_pct']) / 100
 margin_of_safety = float(row['mos_factor_pct']) / 100
 
+next_yr_FCF = None
+if 'next_year_FCF' in row.keys() and row['next_year_FCF']:
+    print("Bad company, so using FCF from file...")
+    next_yr_FCF = common.sanitize_accounting_number(row['next_year_FCF'])
 
 d = common.get_data_dict(data_file_path)
 shares_out = float(d['Weighted Average Shs Out'][-1])
-next_yr_FCF = np.mean(d['FCF per Share']) * shares_out
+if not next_yr_FCF:
+    next_yr_FCF = np.mean([x for x in d['FCF per Share'] if x]) * shares_out
 
 print("---")
+print("                     Ticker =", ticker)
 print("              Discount rate =", discount_rate)
 print("Growth rate for first 5 yrs =", rate_first_5_yrs)
 print("Growth rate for last 5 yrs  =", rate_last_5_yrs)

@@ -1,4 +1,4 @@
-ticker,current_stock_price,discount_rate_pct,growth_rate1_pct,growth_rate2_pct,perpetuity_growth_rate_pct,mos_factor_pct
+ticker,current_stock_price,discount_rate_pct,growth_rate1_pct,growth_rate2_pct,perpetuity_growth_rate_pct,mos_factor_pct,next_year_FCF
 # ---
 # discount_rate_pct
 #   - use 8% for the best (like JNJ), 15% for the worst (growth companies)
@@ -16,6 +16,18 @@ ticker,current_stock_price,discount_rate_pct,growth_rate1_pct,growth_rate2_pct,p
 # mos_factor_pct
 #   - how confident are you with your numbers above. Use 80% for the best; 40% for the worst.
 #
+# next_year_FCF (optional)
+#   - fill this only for bad companies for which we can't just use past 10 years average FCF
 # ---
 TRV,131,8,5,5,3,75
 CB,137,9,8,6,3,70
+MSFT,108,11,9,9,5,80
+JNJ,137,8,4.5,4.5,3,80
+MN,2.80,15,-5,-8,-10,50,30M
+RDS-A,63,12.5,5,5,3,70
+HMC,29,10,5,4,3,75
+TM,119,9,5,4,3,75
+INTU,220,9,15,10,5,75
+CHKP,115,10,13,10,5,75
+JAZZ,167,12,15,12,5,60
+AMGN,196,12,10,10,5,70
