@@ -6,7 +6,7 @@ import numpy as np
 from collections import OrderedDict
 import common
 
-ticker = 'BA'
+ticker = 'EFX'
 
 data_file = "../data/{}.tsv".format(ticker)
 if not os.path.exists(data_file):

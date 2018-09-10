@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import common
 
-ticker = 'AMGN'
+ticker = 'EFX'
 
 data_file_path = "../data/{}.tsv".format(ticker)
 estimates_file_path = '../estimates/dcf_estimates.csv'
@@ -18,7 +18,7 @@ for p in [data_file_path, estimates_file_path]:
 
 row = None
 with open(estimates_file_path, newline='') as csvfile:
-    reader = csv.DictReader(filter(lambda row: row[0] != '#', csvfile))
+    reader = csv.DictReader(filter(lambda row: row and row[0] != '#', csvfile))
     for r in reader:
         if r['ticker'] == ticker:
             row = r
