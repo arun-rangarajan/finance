@@ -1,4 +1,10 @@
-# coding: utf-8
+"""
+Script calculates intrinsic value and MOS price for ticker using 
+the discounted cash flow model.
+Estimated values are set in the file specified below by 
+the variable estimates_file_path.
+The stock data TSV file from stockrow should be in ../data/.
+"""
 
 import csv
 import os
@@ -6,7 +12,7 @@ import sys
 import numpy as np
 import common
 
-ticker = 'EFX'
+ticker = 'BK'
 
 data_file_path = "../data/{}.tsv".format(ticker)
 estimates_file_path = '../estimates/dcf_estimates.csv'
@@ -35,12 +41,19 @@ margin_of_safety = float(row['mos_factor_pct']) / 100
 
 next_yr_FCF = None
 if 'next_year_FCF' in row.keys() and row['next_year_FCF']:
-    print("Bad company, so using FCF from file...")
+    print("Speculative/growth company, so using FCF from file...")
     next_yr_FCF = common.sanitize_accounting_number(row['next_year_FCF'])
 
 d = common.get_data_dict(data_file_path)
-shares_out = float(d['Weighted Average Shs Out'][-1])
+
+shares_out = 0
+if d.get('Weighted Average Shs Out (Dil.)', None) and d['Weighted Average Shs Out (Dil.)'][-1]:
+    shares_out = float(d['Weighted Average Shs Out (Dil.)'][-1])
+else:
+    shares_out = float(d['Weighted Average Shs Out'][-1])
+
 if not next_yr_FCF:
+    print('Steady company, so using past 10-yr FCF avg for next year...')
     next_yr_FCF = np.mean([x for x in d['FCF per Share'] if x]) * shares_out
 
 print("---")
