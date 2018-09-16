@@ -12,7 +12,7 @@ import numpy as np
 from collections import OrderedDict
 import common
 
-ticker = 'BK'
+ticker = 'MSFT'
 
 data_file = "../data/{}.tsv".format(ticker)
 if not os.path.exists(data_file):
@@ -31,17 +31,18 @@ fcf_to_sales = ['{}%'.format(f) for f in fcf_to_sales]
 debt_to_equity = common.get_debt_to_equity(d)
 
 df = pd.DataFrame(OrderedDict([
-    ('Dt', d['headers']),
+    ('Date', d['headers']),
+    ('ROA', common.get_as_pct(d['ROA'])),
+    ('ROE', common.get_as_pct(d['ROE'])),
+    ('ROIC', common.get_as_pct(d.get('ROIC', None))),
+    ('ROIC (computed)', common.get_roic(d)),
     ('FCF/Sales', fcf_to_sales),
     ('FCF/share', d['FCF per Share']),
     ('CapEx', common.get_formatted(d['Capital Expenditure'])),
-    ('EPS', d['EPS']),
-    ('ROE', d['ROE']),
-    ('ROA', d['ROA']),
-    #('ROIC', d['ROIC']),
+    ('EPS', d['EPS']),    
     ('D/E', debt_to_equity),
+    ('Revenue', common.get_formatted(d['Revenue'])),
     ('Net Income', common.get_formatted(d['Net Income'])),
-    ('Revenue', common.get_formatted(d['Revenue']))
 ]))
 print(ticker)
 print(tabulate(df, headers='keys', tablefmt='psql'))   
@@ -61,6 +62,7 @@ if 'Total liabilities' in d.keys():
                                    d['Market Cap']):
         if cash and cash > 0 and liab and liab > 0:
             price_to_ncavs.append(round(mkt_cap / (cash - liab), 2))
+    price_to_ncavs.reverse()
     print("Price-to-NCAV =", price_to_ncavs)
     print('---')
 

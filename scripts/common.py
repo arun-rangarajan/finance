@@ -2,6 +2,7 @@ import csv
 import math
 import re
 import numpy as np
+from dask.array.numpy_compat import divide
 
 MILLION_RE = re.compile(r'[mM]$')
 BILLION_RE = re.compile(r'[bB]$')
@@ -66,7 +67,7 @@ def sanitize_accounting_number(v):
         v = float(v) * 1e9
     
     new_val = (-1) * float(v) if is_negative else float(v)
-    new_val = round(new_val, 2)
+    new_val = round(new_val, 4)
     return new_val
 
 
@@ -133,3 +134,34 @@ def get_fcf_to_sales_ratio(d):
 def get_debt_to_equity(d):
     return get_ratio(d, 'Total debt', 'Shareholders Equity')
 
+
+def get_as_pct(arr):
+    pcts = []
+    for x in arr:
+        if x:
+            pcts.append(str(round(x * 100, 1)) + '%')
+        else:
+            pcts.append('0%')
+    return pcts
+
+
+def get_roic(d):
+    """
+    Return on capital (ROC) aka return on invested capital (ROIC)
+    = (Net income - Dividends) / (Debt + Equity)
+    """
+    roics = []
+    for i in range(len(d['Net Income'])):
+        net_income = d['Net Income'][i]
+        if d['Dividend per Share'][i] and d['Weighted Average Shs Out (Dil.)'][i]:
+            dividend = d['Dividend per Share'][i] * d['Weighted Average Shs Out (Dil.)'][i]
+        else:
+            dividend = 0
+        debt = d['Total debt'][i]
+        equity = d['Shareholders Equity'][i]
+        if net_income and dividend and debt and equity:
+            roic = (net_income - dividend) / (debt + equity)
+        else:
+            roic = 0
+        roics.append(roic)
+    return get_as_pct(roics)
